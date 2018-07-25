@@ -42,12 +42,12 @@
                         </tr>
                         <tr>
                             <td>
-                                <b>Your Address : </b>0x4f283036ddb1abf9bf01e3605d4b1e30ddb9fb97 <br>
+                                <b>Your Address : </b><span id="wallet-address">-</span> <br>
                                 
                             </td>
-                            <td><b>Your Private Key : </b><span>xxxxxxxxxxx</span> <br></td>
+                            <td><b>Your Private Key : </b><span id="privateKey">xxxxxxxxxxx</span> <br></td>
                         </tr>
-                        <tr style="background-color:white">
+                        <tr style="">
                                 <td>
                                     <div id="addressQRCode"></div>
                                     
@@ -106,8 +106,44 @@
 
 <script src="./static/js/jquery/jquery.qrcode.js"></script>
 <script src="./static/js/jquery/qrcode.js"></script>
-
 <script>
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    function checkCookie() {
+        var cpk = getCookie("cpk");
+        var cadr = getCookie("cadr");
+        if ( cadr != "" && cpk !="" ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+     if(!checkCookie()){
+        document.location="./index.html";
+    }
+</script>
+<script>
+   
   setTimeout(function () {
     particlesJS('particles-js',
   {
@@ -231,17 +267,7 @@
   var count_particles, stats, update;
     }, 0);
   
-$(document).ready(function(){
-    $("#particles-js").hide();
 
-    $('#addressQRCode').qrcode({
-		text	: "http://jetienne.com"
-    });	
-    
-    $('#privateQRCode').qrcode({
-		text	: "http://jetienne.com"
-	});	
-});
 </script>
     
 
@@ -250,12 +276,39 @@ $(document).ready(function(){
     if (typeof web3 !== 'undefined') {
         web3 = new Web3(web3.currentProvider);
     } else {
-        web3 = new Web3(new Web3.providers.HttpProvider("http://64.52.23.121:8545"));
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
     }
     
-    var pK = '5898b961541be6fed668c1fc08fd524f05e32c04da867a0c8c0c47d92e57f68a';
+    var pK = getCookie('cpk');
     Addr = keythereum.privateKeyToAddress(pK);
     web3.eth.defaultAccount = Addr;
+
+    $(document).ready(function(){
+        $("#particles-js").hide();
+        var addr =getCookie('cadr');
+        var pk = getCookie('cpk');
+        
+        $('#addressQRCode').qrcode({
+            text	: addr
+        });	
+        
+        $('#privateQRCode').qrcode({
+            text	: pk
+        });	
+        
+        
+        $("#wallet-address").html(addr);
+        $("#privateKey").html(pk);
+        
+        web3.eth.getBalance(addr,function(e,r){
+            var tmp = r.c[0];
+            tmp = (r.c[0] / 10000) ;
+            $("#balance").html(tmp + " ETH");
+            console.log(r.c[0]+" ETH");
+        });
+        
+    });
+
     //balance = web3.eth.getBalance(Addr);
     //alert(balance);
 
@@ -263,46 +316,10 @@ $(document).ready(function(){
         //console.log(web3.personal.getPublicKey('5898b961541be6fed668c1fc08fd524f05e32c04da867a0c8c0c47d92e57f68a'));
         //web3.personal.privateKeyToAccount('33fd84d1177554ae9c24812ca12c3ac9d870440335f1278c346bc9ec8376aa3f');
         //web3.eth.accounts.keys(function(error,result){console.log(result});
-     $(document).ready(function(){
-
-
-        //Create Cookie function-set
+     
 
         
-        function setCookie(cname, cvalue, exdays) {
-            var d = new Date();
-            d.setTime(d.getTime() + (exdays*24*60*60*1000));
-            var expires = "expires="+ d.toUTCString();
-            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-        }
-        function getCookie(cname) {
-            var name = cname + "=";
-            var decodedCookie = decodeURIComponent(document.cookie);
-            var ca = decodedCookie.split(';');
-            for(var i = 0; i <ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) == ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
-                }
-            }
-            return "";
-        }
-        function checkCookie() {
-            var RPCNetwork = getCookie("RPCNetwork");
-            if (RPCNetwork != "") {
-                alert("Welcome again! Your Network is : " + RPCNetwork);
-            } else {
-                RPCNetwork = prompt("Please enter your name:", "http://64.52.23.121:8545");
-                if (RPCNetwork != "" && RPCNetwork != null) {
-                    setCookie("RPCNetwork", RPCNetwork, 365);
-                }
-            }
-        }
-        //checkCookie();
-     }); 
+    
        
 </script>
 

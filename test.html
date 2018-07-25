@@ -1,0 +1,87 @@
+<script>/* Configuration Start */
+ 
+// Password to unlock sender account
+const PASSWORD = "password";
+ 
+// If you are using geth, your key is under datadir/keystore
+const keyObj = {};
+ 
+// https://infura.io
+const INFURA_KEY = "XXXXXXXXXXXXXXXX";
+const INFURA_HOST = "https://ropsten.infura.io/";
+ 
+// It's mine. You can use this for testing on ropsten. Even on mainnet :)
+const toAddress = "0x091225B0D977922de7483e65e24bb9d17dF687EC";
+ 
+const SEND_VALUE = 0.1;
+ 
+/* Configuration End */
+ 
+ 
+Web3 = require("web3");
+web3 = new Web3(new Web3.providers.HttpProvider(INFURA_HOST + INFURA_KEY));
+ 
+const keythereum = require("keythereum");
+const Tx = require("ethereumjs-tx");
+ 
+// Nonce
+var address = "0x" + keyObj.address;
+var promiseNonce = web3.eth.getTransactionCount(address)
+ 
+// Gas Price
+var promiseGasPrice = web3.eth.getGasPrice();
+ 
+// Gas Limit
+var promiseGasLimit = web3.eth.estimateGas({to: toAddress, data: ""});
+ 
+// Wait for promises
+console.log("Wait for the promises...");
+Promise.all([promiseNonce, promiseGasPrice, promiseGasLimit])
+  .then(function(values) {
+    console.log("All promises has been completed.");
+    console.log("Nonce: " + values[0]);
+    console.log("Gas Price: " + values[1]);
+    console.log("Gas Limit: " + values[2]);
+    console.log("Ether limit is: " + web3.utils.fromWei((values[1] * values[2]).toString(), "ether"));
+ 
+    var nonce_hex = web3.utils.numberToHex(values[0]);
+    var price_hex = web3.utils.numberToHex(Number(values[1]));
+    var limit_hex = web3.utils.numberToHex(values[2]);
+    var value_hex = web3.utils.numberToHex(Number(web3.utils.toWei(SEND_VALUE.toString(), "ether")));
+ 
+    console.log("Nonce (HEX): " + nonce_hex);
+    console.log("Gas Price (HEX): " + price_hex);
+    console.log("Gas Limit (HEX): " +  limit_hex);
+    console.log("Value (HEX):" + value_hex);
+ 
+    // raw transaction data
+    return {
+      nonce: nonce_hex,
+      gasPrice: price_hex,
+      gasLimit: limit_hex,
+      to: toAddress,
+      value: value_hex,
+      data: ""
+    };
+  })
+  .then(function (rawTx) {
+    console.log(rawTx);
+    console.log("Recover private key");
+    var privateKey = keythereum.recover(PASSWORD, keyObj)
+    var tx = new Tx(rawTx)
+     
+    console.log("Sign the transaction");
+    tx.sign(privateKey)
+ 
+    web3.eth.sendSignedTransaction("0x" + tx.serialize().toString("hex"))
+      .once("transactionHash", function(hash) {
+        console.log("Transaction hash: " + hash);
+      })
+      .once("receipt", function(receipt) {
+        console.log("Receipt: " + receipt);
+      })
+      .once("error", function(err) {
+        console.log("Error: " + err);
+      })
+  })
+</script>

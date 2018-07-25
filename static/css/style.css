@@ -38,11 +38,12 @@
    body{
 	 font:normal 75% Arial, Helvetica, sans-serif;
      background-color:#403e5a;
-     height:130%;
+     height:100%;
      background-color:#403e5a;
 	 overflow:hidden;
    }
-   
+   Qmd6TCTiJrGGGJuHLoev7GnDE9fHQbRhtvp92Kn7BY9JUa
+
    canvas{
 	 display:block;
 	 vertical-align:bottom;
@@ -191,6 +192,7 @@ background-color:#403e5a;
 float:left;
 width:25%;
 height:100%;
+overflow-x: hidden;
 
 }
 #div-right{

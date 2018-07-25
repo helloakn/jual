@@ -69,13 +69,13 @@
             <tr><td>Type your private Key:</td></tr>
             <tr>
                 <td>
-                    <input class="txt" type="text" name="toAddress" id="txtToAddress" value="" />
+                    <input class="txt" type="text" name="toAddress" id="txtPrivateKeyDecrypt" value="" />
                 </td>
             </tr>
             
             <tr>
                 <td>
-                    <input class="btn" type="button" name="btnSubmit" id="btnSubmit" value="Decrypt Wallet" />
+                    <input class="btn" type="button" name="btnSubmit" id="btnPrivateKeyDecrypt" value="Decrypt Wallet" />
                 </td>
             </tr>
             
@@ -251,12 +251,31 @@ $(document).ready(function(){
     if (typeof web3 !== 'undefined') {
         web3 = new Web3(web3.currentProvider);
     } else {
-        web3 = new Web3(new Web3.providers.HttpProvider("http://64.52.23.121:8545"));
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
     }
-    
+    var p_Key = "";
     
     // exportToCsvFile(keyfile);
 
+    $("#btnPrivateKeyDecrypt").click(function(){
+
+        $("#particles-js").show("slow",function(){
+            var pK = $("#txtPrivateKeyDecrypt").val();
+            p_Key = keythereum.privateKeyToAddress(pK);
+            //console.log(p_Key);
+            //alert(p_Key);
+            cname = "cpk";
+            cvalue = pK;
+            exdays ="1";
+            setCookie(cname, cvalue, exdays);
+            cname = "cadr";
+            cvalue = p_Key;
+            exdays ="1";
+            setCookie(cname, cvalue, exdays);
+            $("#particles-js").hide();
+            document.location = "./mywallet.html";
+        });
+    });
     $("#btncreateWallet").click(function(){
 
         $("#particles-js").show("slow",function(){
@@ -265,15 +284,26 @@ $(document).ready(function(){
                 var params = { keyBytes: 32, ivBytes: 16 };
                 var dk = keythereum.create(params);
                 var keyDump = keythereum.dump(pass, dk.privateKey, dk.salt, dk.iv);
-                var address = keyDump.address;
-                console.log(keyDump.crypto.ciphertext); // this is private key
+                var address = keythereum.privateKeyToAddress(dk.privateKey.toString('hex')) //keyDump.address;
+                console.log(dk.privateKey.toString('hex')); // this is private key
                 keyfile = keythereum.exportToFile(keyDump);
                 $("#particles-js").hide();
                 //exportToCsvFile(keyfile);
                 //$("#particles-js").hide();
                 tmpHtml = "<b>Address :</b> " + keyDump.address +
-                "<br> <b>Your private key :</b> " + keyDump.crypto.ciphertext +
+                "<br> <b>Your private key :</b> " + dk.privateKey.toString('hex')+
                 "<br> Do you want to download your <b>key file</b>as csv?";
+
+
+                cname = "cpk";
+                cvalue = dk.privateKey.toString('hex');
+                exdays ="1";
+                setCookie(cname, cvalue, exdays);
+                cname = "cadr";
+                cvalue = keyDump.address;
+                exdays ="1";
+                setCookie(cname, cvalue, exdays);
+                
                 swal({
                     title: 'Success!',
                     html:tmpHtml,
@@ -283,6 +313,7 @@ $(document).ready(function(){
                     cancelButtonColor: '#110b219e',
                     confirmButtonText: 'Yes, Download it!'
                     }).then((result) => {
+                        
                     if (result.value) {
                         exportToCsvFile(keyfile);
                         swal(
@@ -290,11 +321,11 @@ $(document).ready(function(){
                         "pls don't share it to other.",
                         'success'
                         ).then((s) => {
-                            document.location = "./send.html";
+                            document.location = "./mywallet.html";
                         });
                     }
                     else{
-                        document.location = "./send.html";
+                        document.location = "./mywallet.html";
                     }
                 });
 
@@ -354,17 +385,16 @@ $(document).ready(function(){
         //console.log(web3.personal.getPublicKey('5898b961541be6fed668c1fc08fd524f05e32c04da867a0c8c0c47d92e57f68a'));
         //web3.personal.privateKeyToAccount('33fd84d1177554ae9c24812ca12c3ac9d870440335f1278c346bc9ec8376aa3f');
         //web3.eth.accounts.keys(function(error,result){console.log(result});
-     $(document).ready(function(){
-
+     
 
         //Create Cookie function-set
 
         
         function setCookie(cname, cvalue, exdays) {
-            var d = new Date();
-            d.setTime(d.getTime() + (exdays*24*60*60*1000));
-            var expires = "expires="+ d.toUTCString();
-            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            //var d = new Date();
+            //d.setTime(d.getTime() + (exdays*24*60*60*1000));
+            //var expires = "expires="+ d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";";// + expires + ";path=/";
         }
         function getCookie(cname) {
             var name = cname + "=";
@@ -393,7 +423,7 @@ $(document).ready(function(){
             }
         }
         //checkCookie();
-     }); 
+    
        
 </script>
 
